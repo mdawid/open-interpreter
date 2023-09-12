@@ -26,7 +26,5 @@ dist/
 # Ignore misc directory
 misc/
 
-.vscode/
-
 # Ignore litellm_uuid.txt
 litellm_uuid.txt

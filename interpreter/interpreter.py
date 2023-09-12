@@ -301,6 +301,8 @@ class Interpreter:
 
     if return_messages:
         return self.messages
+  def my_custom_logging_fn(self, model_call_dict):
+    print(f"model call details: {model_call_dict}")
 
   def verify_api_key(self):
     """
@@ -442,7 +444,7 @@ class Interpreter:
       litellm.api_key = self.api_key
       if self.api_base:
         litellm.api_base = self.api_base
-
+      litellm.set_verbose = True
   def end_active_block(self):
     if self.active_block:
       self.active_block.end()
@@ -507,6 +509,7 @@ class Interpreter:
                   functions=[function_schema],
                   stream=True,
                   temperature=self.temperature,
+                  logger_fn=self.my_custom_logging_fn
                 )
 
             break
