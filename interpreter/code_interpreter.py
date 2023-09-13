@@ -207,7 +207,7 @@ class CodeInterpreter:
     code = self.code
 
     # Add print commands that tell us what the active line is
-    if self.print_cmd:
+    if self.print_cmd and self.debug_mode:
       try:
         code = self.add_active_line_prints(code)
       except:
