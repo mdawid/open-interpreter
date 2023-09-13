@@ -444,7 +444,7 @@ class Interpreter:
       litellm.api_key = self.api_key
       if self.api_base:
         litellm.api_base = self.api_base
-      litellm.set_verbose = True
+      #litellm.set_verbose = True
   def end_active_block(self):
     if self.active_block:
       self.active_block.end()
