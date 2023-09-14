@@ -9,7 +9,7 @@ The code here has duplication. It has imports in weird places. It has been spagh
 
 In my opinion **this is critical** to keep up with the pace of demand for this project.
 
-At the same time, I plan on pushing a significant re-factor of `interpreter.py` and `code_interpreter.py` ~ September 11th.
+At the same time, I plan on pushing a significant re-factor of `interpreter.py` and `code_interpreter.py` ~ September 16th.
 
 After the re-factor, Open Interpreter's source code will be much simpler, and much more fun to dive into.
 
@@ -24,7 +24,6 @@ from .message_block import MessageBlock
 from .code_block import CodeBlock
 from .code_interpreter import CodeInterpreter
 from .get_hf_llm import get_hf_llm
-
 
 import os
 import time
@@ -189,13 +188,46 @@ class Interpreter:
   def load(self, messages):
     self.messages = messages
 
+
+  def handle_undo(self, arguments):
+    # Removes all messages after the most recent user entry (and the entry itself).
+    # Therefore user can jump back to the latest point of conversation.
+    # Also gives a visual representation of the messages removed.
+
+    if len(self.messages) == 0:
+      return
+    # Find the index of the last 'role': 'user' entry
+    last_user_index = None
+    for i, message in enumerate(self.messages):
+        if message.get('role') == 'user':
+            last_user_index = i
+
+    removed_messages = []
+
+    # Remove all messages after the last 'role': 'user'
+    if last_user_index is not None:
+        removed_messages = self.messages[last_user_index:]
+        self.messages = self.messages[:last_user_index]
+
+    print("") # Aesthetics.
+
+    # Print out a preview of what messages were removed.
+    for message in removed_messages:
+      if 'content' in message and message['content'] != None:
+        print(Markdown(f"**Removed message:** `\"{message['content'][:30]}...\"`"))
+      elif 'function_call' in message:
+        print(Markdown(f"**Removed codeblock**")) # TODO: Could add preview of code removed here.
+    
+    print("") # Aesthetics.
+
   def handle_help(self, arguments):
     commands_description = {
       "%debug [true/false]": "Toggle debug mode. Without arguments or with 'true', it enters debug mode. With 'false', it exits debug mode.",
       "%reset": "Resets the current session.",
+      "%undo": "Remove previous messages and its response from the message history.",
       "%save_message [path]": "Saves messages to a specified JSON path. If no path is provided, it defaults to 'messages.json'.",
       "%load_message [path]": "Loads messages from a specified JSON path. If no path is provided, it defaults to 'messages.json'.",
-      "%help": "Show this help message."
+      "%help": "Show this help message.",
     }
 
     base_message = [
@@ -263,6 +295,7 @@ class Interpreter:
       "reset": self.handle_reset,
       "save_message": self.handle_save_message,
       "load_message": self.handle_load_message,
+      "undo": self.handle_undo,
     }
 
     user_input = user_input[1:].strip()  # Capture the part after the `%`
@@ -925,5 +958,4 @@ class Interpreter:
           return
 
   def _print_welcome_message(self):
-    current_version = pkg_resources.get_distribution("open-interpreter").version
-    print(f"\n Hello, Welcome to [bold]● Open Interpreter[/bold]. (v{current_version})\n")
+    print("", Markdown("●"), "", Markdown(f"\nWelcome to **Open Interpreter**.\n"), "")
