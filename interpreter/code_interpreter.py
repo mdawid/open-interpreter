@@ -356,7 +356,7 @@ class CodeInterpreter:
     for line in iter(stream.readline, ''):
 
       if self.debug_mode:
-        print("Recieved output line:")
+        print("Received output line:")
         print(line)
         print("---")
 

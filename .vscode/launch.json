@@ -5,17 +5,17 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Module",
+            "name": "Python",
             "type": "python",
             "request": "launch",
             "module": "poetry",
+            "justMyCode": true,
             "args": [
                 "run",
                 "interpreter",
                 "--fast",
                 "--yes"
-            ],
-            "justMyCode": true
+            ]
         },
         {
             "name": "Python: Remote Attach",
