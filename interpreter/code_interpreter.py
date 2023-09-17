@@ -103,7 +103,7 @@ language_map = {
   },
   "web_search": {
     "run_function": run_bing_search,
-    "open_subrocess": False,
+    "open_subprocess": False,
   }
 }
 
