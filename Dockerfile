@@ -16,5 +16,5 @@ COPY . /app
 RUN poetry config virtualenvs.create false \
     && poetry install --no-interaction --no-ansi
 
-
-CMD ["poetry", "run", "interpreter", "--debug", "--fast" ]
+ENTRYPOINT ["poetry", "run", "interpreter"]
+CMD []
