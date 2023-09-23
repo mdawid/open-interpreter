@@ -1,11 +1,10 @@
-
-
 from .languages.python import Python
 from .languages.shell import Shell
 from .languages.javascript import JavaScript
 from .languages.html import HTML
 from .languages.applescript import AppleScript
 from .languages.r import R
+from .languages.websearch import WebSearch
 
 def create_code_interpreter(language):
     # Case in-sensitive
@@ -19,6 +18,7 @@ def create_code_interpreter(language):
         "html": HTML,
         "applescript": AppleScript,
         "r": R,
+        "web_search": WebSearch,
     }
 
     try:
