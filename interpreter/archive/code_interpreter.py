@@ -29,10 +29,9 @@ import ast
 import sys
 import os
 import re
-import requests
 
 
-def run_html(html_content, _active_block):
+def run_html(html_content):
     # Create a temporary HTML file with the content
     with tempfile.NamedTemporaryFile(delete=False, suffix=".html") as f:
         f.write(html_content.encode())
@@ -42,30 +41,6 @@ def run_html(html_content, _active_block):
 
     return f"Saved to {os.path.realpath(f.name)} and opened with the user's default web browser."
 
-
-def run_bing_search(search_term, active_block):
-  bing_search_url = "https://api.bing.microsoft.com/v7.0/search"
-  headers = {"Ocp-Apim-Subscription-Key": os.environ['BING_SUBSCRIPTION_KEY']}
-  params = {
-      "q": search_term,
-      "count": 5,
-      "textDecorations": True,
-      "textFormat": "HTML",
-  }
-  response = requests.get(
-      bing_search_url, headers=headers, params=params  # type: ignore
-  )
-  response.raise_for_status()
-  search_results = response.json()
-  snippets = []
-  for result in search_results["webPages"]["value"]:
-    snippets.append(result["snippet"])
-  output = " ".join(snippets)
-
-  active_block.output = output
-  active_block.refresh()
-
-  return output
 
 # Mapping of languages to their start, run, and print commands
 language_map = {
@@ -100,10 +75,6 @@ language_map = {
   "html": {
     "open_subprocess": False,
     "run_function": run_html,
-  },
-  "web_search": {
-    "run_function": run_bing_search,
-    "open_subprocess": False,
   }
 }
 
@@ -207,7 +178,7 @@ class CodeInterpreter:
     code = self.code
 
     # Add print commands that tell us what the active line is
-    if self.print_cmd and self.debug_mode:
+    if self.print_cmd:
       try:
         code = self.add_active_line_prints(code)
       except:
@@ -257,9 +228,8 @@ class CodeInterpreter:
       print("---")
 
     # HTML-specific processing (and running)
-    if self.language in ("html", "web_search"):
-      output = language_map[self.language]["run_function"](code, self.active_block)
-      self.output = output
+    if self.language == "html":
+      output = language_map["html"]["run_function"](code)
       return output
 
     # Reset self.done so we can .wait() for it
