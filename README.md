@@ -93,6 +93,15 @@ This combines the power of GPT-4's Code Interpreter with the flexibility of your
 
 ## Commands
 
+**Update:** The Generator Update (0.1.5) introduced streaming:
+
+```python
+message = "What operating system are we on?"
+
+for chunk in interpreter.chat(message, display=False, stream=True):
+  print(chunk)
+```
+
 ### Interactive Chat
 
 To start an interactive chat in your terminal, either run `interpreter` from the command line:
@@ -105,6 +114,15 @@ Or `interpreter.chat()` from a .py file:
 
 ```python
 interpreter.chat()
+```
+
+**You can also stream each chunk:**
+
+```python
+message = "What operating system are we on?"
+
+for chunk in interpreter.chat(message, display=False, stream=True):
+  print(chunk)
 ```
 
 ### Programmatic Chat
