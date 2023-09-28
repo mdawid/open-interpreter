@@ -73,6 +73,14 @@ arguments = [
         "nickname": "ak",
         "help_text": "optionally set the API key for your llm calls (this will override environment variables)",
         "type": str
+    },
+    {
+        "name": "safe_mode",
+        "nickname": "safe",
+        "help_text": "optionally enable safety mechanisms like code scanning; valid options are off, ask, and auto",
+        "type": str,
+        "default": "off",
+        "choices": ["off", "ask", "auto"]
     }
 ]
 
@@ -85,7 +93,10 @@ def cli(interpreter):
         if arg["type"] == bool:
             parser.add_argument(f'-{arg["nickname"]}', f'--{arg["name"]}', dest=arg["name"], help=arg["help_text"], action='store_true', default=None)
         else:
-            parser.add_argument(f'-{arg["nickname"]}', f'--{arg["name"]}', dest=arg["name"], help=arg["help_text"], type=arg["type"])
+            choices = arg["choices"] if "choices" in arg else None
+            default = arg["default"] if "default" in arg else None
+
+            parser.add_argument(f'-{arg["nickname"]}', f'--{arg["name"]}', dest=arg["name"], help=arg["help_text"], type=arg["type"], choices=choices, default=default)
 
     # Add special arguments
     parser.add_argument('--config', dest='config', action='store_true', help='open config.yaml file in text editor')
@@ -128,6 +139,10 @@ def cli(interpreter):
         # Ignore things that aren't possible attributes on interpreter
         if attr_value is not None and hasattr(interpreter, attr_name):
             setattr(interpreter, attr_name, attr_value)
+
+    # if safe_mode and auto_run are enabled, safe_mode disables auto_run
+    if interpreter.auto_run and not interpreter.safe_mode == "off":
+        setattr(interpreter, "auto_run", False)
 
     # Default to CodeLlama if --local is on but --model is unset
     if interpreter.local and args.model is None:

@@ -27,6 +27,8 @@ wget = "^3.2"
 huggingface-hub = "^0.16.4"
 litellm = "^0.1.652"
 pyyaml = "^6.0.1"
+semgrep = "^1.41.0"
+yaspin = "^3.0.1"
 debugpy = "^1.7.0"
 poetry = "^1.6.1"
 [tool.poetry.dependencies.pyreadline3]
