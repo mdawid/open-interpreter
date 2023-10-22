@@ -4,6 +4,7 @@ from .languages.javascript import JavaScript
 from .languages.html import HTML
 from .languages.applescript import AppleScript
 from .languages.r import R
+from .languages.powershell import PowerShell
 from .languages.websearch import WebSearch
 
 language_map = {
@@ -14,5 +15,6 @@ language_map = {
     "html": HTML,
     "applescript": AppleScript,
     "r": R,
+		"powershell": PowerShell,
     "web_search": WebSearch,
 }

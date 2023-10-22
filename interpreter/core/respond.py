@@ -1,8 +1,6 @@
 from ..code_interpreters.create_code_interpreter import create_code_interpreter
 from ..utils.merge_deltas import merge_deltas
-from ..utils.get_user_info_string import get_user_info_string
 from ..utils.display_markdown_message import display_markdown_message
-from ..rag.get_relevant_procedures import get_relevant_procedures
 from ..utils.truncate_output import truncate_output
 import traceback
 import litellm
@@ -15,22 +13,7 @@ def respond(interpreter):
 
     while True:
 
-        ### PREPARE MESSAGES ###
-
-        system_message = interpreter.system_message
-        
-        # Open Procedures is an open-source database of tiny, up-to-date coding tutorials.
-        # We can query it semantically and append relevant tutorials/procedures to our system message
-        get_relevant_procedures(interpreter.messages[-2:])
-        if not interpreter.local:
-            try:
-                system_message += "\n\n" + get_relevant_procedures(interpreter.messages[-2:])
-            except:
-                # This can fail for odd SLL reasons. It's not necessary, so we can continue
-                pass
-        
-        # Add user info to system_message, like OS, CWD, etc
-        system_message += "\n\n" + get_user_info_string()
+        system_message = interpreter.generate_system_message()
 
         # Create message object
         system_message = {"role": "system", "message": system_message}
@@ -54,6 +37,10 @@ def respond(interpreter):
         # Start putting chunks into the new message
         # + yielding chunks to the user
         try:
+
+            # Track the type of chunk that the coding LLM is emitting
+            chunk_type = None
+
             for chunk in interpreter._llm(messages_for_llm):
 
                 # Add chunk to the last message
@@ -61,7 +48,32 @@ def respond(interpreter):
 
                 # This is a coding llm
                 # It will yield dict with either a message, language, or code (or language AND code)
+
+                # We also want to track which it's sending to we can send useful flags.
+                # (otherwise pretty much everyone needs to implement this)
+                if "message" in chunk and chunk_type != "message":
+                    chunk_type = "message"
+                    yield {"start_of_message": True}
+                elif "language" in chunk and chunk_type != "code":
+                    chunk_type = "code"
+                    yield {"start_of_code": True}
+                if "code" in chunk and chunk_type != "code":
+                    # (This shouldn't happen though — ^ "language" should be emitted first, but sometimes GPT-3.5 forgets this)
+                    # (But I'm pretty sure we handle that? If it forgets we emit Python anyway?)
+                    chunk_type = "code"
+                    yield {"start_of_code": True}
+                elif "message" not in chunk and chunk_type == "message":
+                    chunk_type = None
+                    yield {"end_of_message": True}
+
                 yield chunk
+
+            # We don't trigger the end_of_message or end_of_code flag if we actually end on either
+            if chunk_type == "message":
+                yield {"end_of_message": True}
+            elif chunk_type == "code":
+                yield {"end_of_code": True}
+            
         except litellm.exceptions.BudgetExceededError:
             display_markdown_message(f"""> Max budget exceeded
 
